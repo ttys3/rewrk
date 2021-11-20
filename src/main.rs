@@ -165,6 +165,7 @@ fn parse_args() -> ArgMatches {
         .version("0.3.1")
         .author("Harrison Burt <hburt2003@gmail.com>")
         .about("Benchmark HTTP/1 and HTTP/2 frameworks without pipelining bias.")
+        .term_width(120)
         .arg(
             Arg::new("threads")
                 .short('t')
@@ -193,7 +194,7 @@ fn parse_args() -> ArgMatches {
             Arg::new("header")
                 .short('H')
                 .long("header")
-                .about("Add header to request e.g. 'User-Agent: wrk'")
+                .about(r#"Add header to request e.g. '-H "User-Agent: wrk" -H "X-My-Header: myvalue"'"#)
                 .takes_value(true)
                 .multiple_occurrences(true)
                 .required(false)
