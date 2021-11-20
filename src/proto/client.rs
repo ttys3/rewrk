@@ -122,8 +122,9 @@ where
         send_request: &mut conn::SendRequest<Body>,
         times: &mut Vec<Duration>,
     ) -> Result<bool, AnyError> {
-        let mut req = self.protocol.get_request(&self.parsed_uri.uri);
-        *req.headers_mut() = self.headers.clone();
+        let req = self
+            .protocol
+            .get_request(&self.parsed_uri.uri, &self.headers);
 
         let ts = Instant::now();
 
@@ -149,7 +150,7 @@ where
 
         let _buff = match hyper::body::to_bytes(resp).await {
             Ok(v) => v,
-            Err(_) => return Ok(true),
+            Err(_) => return Ok(false),
         };
 
         // println!("got body={:?}", _buff);

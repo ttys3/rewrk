@@ -61,10 +61,10 @@ fn main() {
                 if ss.len() != 2 {
                     continue;
                 }
-                eprintln!("header applied: {}: {}", &ss[0], &ss[1]);
+                eprintln!("header applied: {}: {}", &ss[0], &ss[1].trim());
                 h.insert(
                     thehttp::header::HeaderName::from_str(&ss[0]).unwrap(),
-                    thehttp::header::HeaderValue::from_str(&ss[1]).unwrap(),
+                    thehttp::header::HeaderValue::from_str(&ss[1].trim()).unwrap(),
                 );
             }
             h

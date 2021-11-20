@@ -1,13 +1,13 @@
-use http::request;
+use http::{request, HeaderMap};
 use hyper::{Body, Request, Uri};
 
 pub trait HttpProtocol {
     fn is_http2(&self) -> bool;
 
-    fn request_builder(&self, uri: &Uri) -> request::Builder;
+    fn request_builder(&self, uri: &Uri, headers: &HeaderMap) -> request::Builder;
 
-    fn get_request(&self, uri: &Uri) -> Request<Body> {
-        self.request_builder(uri)
+    fn get_request(&self, uri: &Uri, headers: &HeaderMap) -> Request<Body> {
+        self.request_builder(uri, headers)
             .body(Body::empty())
             .expect("bad uri")
     }
@@ -23,10 +23,15 @@ impl HttpProtocol for Http1 {
         false
     }
 
-    fn request_builder(&self, uri: &Uri) -> request::Builder {
+    fn request_builder(&self, uri: &Uri, headers: &HeaderMap) -> request::Builder {
         let host = host_header(uri);
 
-        Request::builder().uri(uri.path()).header("Host", host)
+        let mut req = Request::builder().uri(uri.path());
+        req = req.header("Host", host);
+        for (k, v) in headers {
+            req = req.header(k, v);
+        }
+        req
     }
 
     fn alpn_protocols(&self) -> Vec<Vec<u8>> {
@@ -42,8 +47,14 @@ impl HttpProtocol for Http2 {
         true
     }
 
-    fn request_builder(&self, uri: &Uri) -> request::Builder {
-        Request::builder().uri(uri)
+    fn request_builder(&self, uri: &Uri, headers: &HeaderMap) -> request::Builder {
+        let mut req = Request::builder().uri(uri);
+        // let host = host_header(uri);
+        // req = req.header(":authority", host);
+        for (k, v) in headers {
+            req = req.header(k, v);
+        }
+        req
     }
 
     fn alpn_protocols(&self) -> Vec<Vec<u8>> {
