@@ -92,9 +92,10 @@ async fn run(settings: BenchmarkSettings) -> Result<()> {
 
     if !settings.display_json {
         println!(
-            "Benchmarking {} connections @ {} for {}",
+            "Benchmarking {} connections with {} threads @ {} for {}",
             string(settings.connections).cyan(),
-            settings.host,
+            string(settings.threads).cyan(),
+            settings.host.cyan(),
             humanize(settings.duration),
         );
     }

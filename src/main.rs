@@ -160,85 +160,86 @@ fn parse_duration(duration: &str) -> Result<Duration> {
 }
 
 /// Contains Clap's app setup.
-fn parse_args() -> ArgMatches<'static> {
+fn parse_args() -> ArgMatches {
     App::new("ReWrk")
         .version("0.3.1")
         .author("Harrison Burt <hburt2003@gmail.com>")
         .about("Benchmark HTTP/1 and HTTP/2 frameworks without pipelining bias.")
         .arg(
-            Arg::with_name("threads")
-                .short("t")
+            Arg::new("threads")
+                .short('t')
                 .long("threads")
-                .help("Set the amount of threads to use e.g. '-t 12'")
+                .about("Set the amount of threads to use e.g. '-t 12'")
                 .takes_value(true)
                 .default_value("1"),
         )
         .arg(
-            Arg::with_name("connections")
-                .short("c")
+            Arg::new("connections")
+                .short('c')
                 .long("connections")
-                .help("Set the amount of concurrent e.g. '-c 512'")
+                .about("Set the amount of concurrent e.g. '-c 512'")
                 .takes_value(true)
                 .default_value("1"),
         )
         .arg(
-            Arg::with_name("host")
-                .short("h")
+            Arg::new("host")
+                .short('h')
                 .long("host")
-                .help("Set the host to bench e.g. '-h http://127.0.0.1:5050'")
+                .about("Set the host to bench e.g. '-h http://127.0.0.1:5050'")
                 .takes_value(true)
                 .required(true),
         )
         .arg(
-            Arg::with_name("header")
-                .short("H")
+            Arg::new("header")
+                .short('H')
                 .long("header")
-                .help("Add header to request e.g. 'User-Agent: wrk'")
+                .about("Add header to request e.g. 'User-Agent: wrk'")
                 .takes_value(true)
-                .multiple(true)
+                .multiple_occurrences(true)
                 .required(false)
                 .min_values(0),
         )
         .arg(
-            Arg::with_name("http2")
+            Arg::new("http2")
                 .long("http2")
-                .help("Set the client to use http2 only. (default is http/1) e.g. '--http2'")
+                .about("Set the client to use http2 only. (default is http/1) e.g. '--http2'")
                 .required(false)
                 .takes_value(false),
         )
         .arg(
-            Arg::with_name("duration")
-                .short("d")
+            Arg::new("duration")
+                .short('d')
                 .long("duration")
-                .help("Set the duration of the benchmark.")
+                .about("Set the duration of the benchmark.")
                 .takes_value(true)
+                .default_value("10s")
                 .required(true),
         )
         .arg(
-            Arg::with_name("pct")
+            Arg::new("pct")
                 .long("pct")
-                .help("Displays the percentile table after benchmarking.")
+                .about("Displays the percentile table after benchmarking.")
                 .takes_value(false)
                 .required(false),
         )
         .arg(
-            Arg::with_name("json")
+            Arg::new("json")
                 .long("json")
-                .help("Displays the results in a json format")
+                .about("Displays the results in a json format")
                 .takes_value(false)
                 .required(false),
         )
         .arg(
-            Arg::with_name("rounds")
+            Arg::new("rounds")
                 .long("rounds")
-                .help("Repeats the benchmarks n amount of times")
+                .about("Repeats the benchmarks n amount of times")
                 .takes_value(true)
                 .required(false),
         )
         //.arg(
-        //    Arg::with_name("random")
+        //    Arg::new("random")
         //        .long("rand")
-        //        .help(
+        //        .about(
         //            "Sets the benchmark type to random mode, \
         //             clients will randomly connect and re-connect.\n\
         //             NOTE: This will cause the HTTP2 flag to be ignored."
