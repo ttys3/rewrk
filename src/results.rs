@@ -200,9 +200,9 @@ impl WorkerResult {
         println!("  Latencies:");
         println!(
             "    {:<7}  {:<7}  {:<7}  {:<7}  ",
-            "Avg".bright_yellow(),
-            "Stdev".bright_magenta(),
-            "Min".bright_green(),
+            "Avg".yellow(),
+            "Stdev".magenta(),
+            "Min".green(),
             "Max".bright_red(),
         );
         println!(
