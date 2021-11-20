@@ -139,8 +139,10 @@ where
         let took = ts.elapsed();
 
         let status = resp.status();
+
         // assert_eq!(status, StatusCode::OK);
-        eprintln!("err status={:?}", status);
+        // println!("got status={:?}", status);
+
         if status != StatusCode::OK {
             return Ok(false);
         }
@@ -149,6 +151,8 @@ where
             Ok(v) => v,
             Err(_) => return Ok(true),
         };
+
+        // println!("got body={:?}", _buff);
 
         times.push(took);
 
