@@ -9,6 +9,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
+use http::HeaderMap;
 use tokio::net::TcpStream;
 use tokio::time::sleep;
 
@@ -27,6 +28,7 @@ pub struct BenchmarkClient<C, P> {
     time_for: Duration,
     predicted_size: usize,
     parsed_uri: ParsedUri,
+    headers: HeaderMap,
 }
 
 impl<C, P> Client for BenchmarkClient<C, P>
@@ -50,6 +52,7 @@ where
         time_for: Duration,
         predicted_size: usize,
         parsed_uri: ParsedUri,
+        headers: HeaderMap,
     ) -> Self {
         Self {
             connector,
@@ -57,6 +60,7 @@ where
             time_for,
             predicted_size,
             parsed_uri,
+            headers,
         }
     }
 
@@ -73,11 +77,20 @@ where
 
         let mut times: Vec<Duration> = Vec::with_capacity(self.predicted_size);
 
+        let mut complete: usize = 0;
+        let mut error: usize = 0;
         while self.time_for > start.elapsed() {
             tokio::select! {
                 val = self.bench_request(&mut connection.send_request, &mut times) => {
-                    if let Err(_e) = val {
+                    // if let Err(_e) = val {
                         // Errors are ignored currently.
+                    // }
+                    if let Ok(is_complete) = val {
+                        if is_complete {
+                            complete += 1;
+                        } else {
+                            error += 1;
+                        }
                     }
                 },
                 _ = (&mut connection.handle) => {
@@ -96,6 +109,8 @@ where
             total_times: vec![time_taken],
             request_times: times,
             buffer_sizes: vec![counter.load(Ordering::Acquire)],
+            success: complete,
+            error: error,
         };
 
         Ok(result)
@@ -106,33 +121,38 @@ where
         &self,
         send_request: &mut conn::SendRequest<Body>,
         times: &mut Vec<Duration>,
-    ) -> Result<(), AnyError> {
-        let req = self.protocol.get_request(&self.parsed_uri.uri);
+    ) -> Result<bool, AnyError> {
+        let mut req = self.protocol.get_request(&self.parsed_uri.uri);
+        *req.headers_mut() = self.headers.clone();
 
         let ts = Instant::now();
 
         if send_request.ready().await.is_err() {
-            return Ok(());
+            return Ok(false);
         }
 
         let resp = match send_request.call(req).await {
             Ok(v) => v,
-            Err(_) => return Ok(()),
+            Err(_) => return Ok(false),
         };
 
         let took = ts.elapsed();
 
         let status = resp.status();
-        assert_eq!(status, StatusCode::OK);
+        // assert_eq!(status, StatusCode::OK);
+        eprintln!("err status={:?}", status);
+        if status != StatusCode::OK {
+            return Ok(false);
+        }
 
         let _buff = match hyper::body::to_bytes(resp).await {
             Ok(v) => v,
-            Err(_) => return Ok(()),
+            Err(_) => return Ok(true),
         };
 
         times.push(took);
 
-        Ok(())
+        Ok(true)
     }
 
     async fn connect_retry(

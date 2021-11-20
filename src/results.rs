@@ -33,6 +33,9 @@ pub struct WorkerResult {
 
     /// The amount of data read from each worker.
     pub buffer_sizes: Vec<usize>,
+
+    pub success: usize,
+    pub error: usize,
 }
 
 impl WorkerResult {
@@ -43,6 +46,8 @@ impl WorkerResult {
             total_times: vec![],
             request_times: vec![],
             buffer_sizes: vec![],
+            success: 0,
+            error: 0,
         }
     }
 
@@ -51,6 +56,8 @@ impl WorkerResult {
         self.request_times.extend(other.request_times);
         self.total_times.extend(other.total_times);
         self.buffer_sizes.extend(other.buffer_sizes);
+        self.success += other.success;
+        self.error += other.error;
 
         self
     }
@@ -58,6 +65,14 @@ impl WorkerResult {
     /// Simple helper returning the amount of requests overall.
     pub fn total_requests(&self) -> usize {
         self.request_times.len()
+    }
+
+    pub fn success_requests(&self) -> usize {
+        self.success
+    }
+
+    pub fn error_requests(&self) -> usize {
+        self.success
     }
 
     /// Calculates the total transfer in bytes.
@@ -73,6 +88,13 @@ impl WorkerResult {
     /// Calculates the requests per second average.
     pub fn avg_request_per_sec(&self) -> f64 {
         let amount = self.request_times.len() as f64;
+        let avg_time = self.avg_total_time();
+
+        amount / avg_time.as_secs_f64()
+    }
+
+    pub fn success_request_per_sec(&self) -> f64 {
+        let amount = self.success as f64;
         let avg_time = self.avg_total_time();
 
         amount / avg_time.as_secs_f64()
@@ -190,6 +212,10 @@ impl WorkerResult {
             format!("{:.2}ms", min),
             format!("{:.2}ms", max),
         );
+        println!("  Completed: {}", self.success + self.error);
+        println!("  success : {}", self.success);
+        println!("  error: {}", self.error);
+        println!("  success rate: {:.2}", self.success_request_per_sec());
     }
 
     pub fn display_requests(&mut self) {

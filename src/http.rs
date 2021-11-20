@@ -1,3 +1,4 @@
+use http::HeaderMap;
 use tokio::task::JoinHandle;
 use tokio::time::Duration;
 
@@ -23,8 +24,10 @@ pub async fn start_tasks(
     uri_string: String,
     bench_type: BenchType,
     predicted_size: usize,
+    headers: HeaderMap,
 ) -> Result<Vec<Handle>, AnyError> {
-    let client = proto::parse::get_client(time_for, uri_string, bench_type, predicted_size).await?;
+    let client =
+        proto::parse::get_client(time_for, uri_string, headers, bench_type, predicted_size).await?;
 
     let mut handles: Vec<Handle> = Vec::with_capacity(connections);
 

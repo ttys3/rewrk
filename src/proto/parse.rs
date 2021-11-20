@@ -1,3 +1,5 @@
+use http::HeaderMap;
+
 use crate::error::AnyError;
 use crate::http::BenchType;
 use crate::proto::{
@@ -12,14 +14,21 @@ struct ClientBuilder {
     time_for: Duration,
     predicted_size: usize,
     parsed_uri: ParsedUri,
+    headers: HeaderMap,
 }
 
 impl ClientBuilder {
-    fn new(time_for: Duration, predicted_size: usize, parsed_uri: ParsedUri) -> Self {
+    fn new(
+        time_for: Duration,
+        predicted_size: usize,
+        parsed_uri: ParsedUri,
+        headers: HeaderMap,
+    ) -> Self {
         Self {
             time_for,
             predicted_size,
             parsed_uri,
+            headers,
         }
     }
 
@@ -42,6 +51,7 @@ impl ClientBuilder {
             self.time_for,
             self.predicted_size,
             self.parsed_uri,
+            self.headers,
         )
     }
 }
@@ -49,12 +59,13 @@ impl ClientBuilder {
 pub async fn get_client(
     time_for: Duration,
     uri_string: String,
+    headers: HeaderMap,
     bench_type: BenchType,
     predicted_size: usize,
 ) -> Result<Arc<dyn Client>, AnyError> {
     let parsed_uri = ParsedUri::parse_and_lookup(&uri_string).await?;
 
-    let builder = ClientBuilder::new(time_for, predicted_size, parsed_uri);
+    let builder = ClientBuilder::new(time_for, predicted_size, parsed_uri, headers);
 
     match bench_type {
         BenchType::HTTP1 => build_http1(builder),

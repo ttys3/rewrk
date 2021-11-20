@@ -1,8 +1,11 @@
 extern crate clap;
 
+use ::http as thehttp;
 use anyhow::{Error, Result};
 use clap::{App, Arg, ArgMatches};
+use hyper::header::HeaderMap;
 use regex::Regex;
+use std::str::FromStr;
 use tokio::time::Duration;
 
 mod bench;
@@ -50,15 +53,23 @@ fn main() {
         }
     };
 
-    let headers: Vec<_> = match args.values_of("header") {
+    let mut h = HeaderMap::new();
+    let headers: HeaderMap = match args.values_of("header") {
         Some(v) => {
-            let vv = v.collect::<Vec<&str>>();
-            eprintln!("{:?}", &vv);
-            vv
+            for s in v {
+                let ss: Vec<&str> = s.splitn(2, ":").collect();
+                if ss.len() != 2 {
+                    continue;
+                }
+                eprintln!("header applied: {}: {}", &ss[0], &ss[1]);
+                h.insert(
+                    thehttp::header::HeaderName::from_str(&ss[0]).unwrap(),
+                    thehttp::header::HeaderValue::from_str(&ss[1]).unwrap(),
+                );
+            }
+            h
         }
-        None => {
-            vec![]
-        }
+        None => h,
     };
 
     let http2: bool = args.is_present("http2");
@@ -96,6 +107,7 @@ fn main() {
         display_percentile: pct,
         display_json: json,
         rounds,
+        headers,
     };
 
     bench::start_benchmark(settings);

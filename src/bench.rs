@@ -1,3 +1,4 @@
+use ::http::HeaderMap;
 use anyhow::{Error, Result};
 use colored::*;
 use std::fmt::Display;
@@ -35,6 +36,8 @@ pub struct BenchmarkSettings {
 
     /// The number of rounds to repeat.
     pub rounds: usize,
+
+    pub headers: HeaderMap,
 }
 
 /// Builds the runtime with the given settings and blocks on the main future.
@@ -78,6 +81,7 @@ async fn run(settings: BenchmarkSettings) -> Result<()> {
         settings.host.clone(),
         settings.bench_type,
         predict_size as usize,
+        settings.headers,
     )
     .await;
 
