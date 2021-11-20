@@ -50,6 +50,17 @@ fn main() {
         }
     };
 
+    let headers: Vec<_> = match args.values_of("header") {
+        Some(v) => {
+            let vv = v.collect::<Vec<&str>>();
+            eprintln!("{:?}", &vv);
+            vv
+        }
+        None => {
+            vec![]
+        }
+    };
+
     let http2: bool = args.is_present("http2");
     let json: bool = args.is_present("json");
 
@@ -165,6 +176,16 @@ fn parse_args() -> ArgMatches<'static> {
                 .help("Set the host to bench e.g. '-h http://127.0.0.1:5050'")
                 .takes_value(true)
                 .required(true),
+        )
+        .arg(
+            Arg::with_name("header")
+                .short("H")
+                .long("header")
+                .help("Add header to request e.g. 'User-Agent: wrk'")
+                .takes_value(true)
+                .multiple(true)
+                .required(false)
+                .min_values(0),
         )
         .arg(
             Arg::with_name("http2")
