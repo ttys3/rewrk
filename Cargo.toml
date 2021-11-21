@@ -8,9 +8,9 @@ edition = "2021"
 tokio = { version = "1.14.0", features = ["rt", "rt-multi-thread", "net", "macros"] }
 hyper = { version = "0.14.15", features = ["runtime", "client", "http1", "http2"] }
 tower = { version = "0.4.11", features = ["util"] }
-rustls = "0.19.1"
-tokio-rustls = "0.22.0"
-rustls-native-certs = "0.5.0"
+rustls = "0.20.2"
+tokio-rustls = "0.23.1"
+rustls-native-certs = "0.6.1"
 clap = "3.0.0-beta.5"
 colored = "2"
 regex = "1.5.*"
